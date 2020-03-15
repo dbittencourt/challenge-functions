@@ -40,8 +40,14 @@ namespace Challenge.Sorters
     {
         public IEnumerable<Product> Sort(IEnumerable<Product> products)
         {
+            // I'm not sure whats the definition of popularity...
+            // returns products ordered by number of appearances in customers lists of products
+            return products.GroupBy(p => p.Name)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.FirstOrDefault()).ToList();
+            
+            // returns products ordered by the sum of its quantities from customers lists of products
             var prods = new Dictionary<string, Product>();
-
             foreach (var product in products)
             {
                 if (prods.ContainsKey(product.Name))
@@ -49,12 +55,7 @@ namespace Challenge.Sorters
                 else
                     prods[product.Name] = product;
             }
-
             return prods.Values.OrderByDescending(p => p.Quantity);
-
-            var prods2 = products.GroupBy(p => p.Name)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.FirstOrDefault()).ToArray();
         }
     }
 }

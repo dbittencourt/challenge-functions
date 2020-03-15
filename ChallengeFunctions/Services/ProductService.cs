@@ -26,30 +26,43 @@ namespace Challenge.Services
         public async Task<IEnumerable<Product>> GetSortedProductsAsync(SortOption type)
         {
             var byPopularity = type == SortOption.Recommended;
-            var products = await GetProductsAsync(byPopularity);
+            
+            var products = await GetProductsAsync();
+            if (byPopularity)
+            {
+                var customerProducts = await GetCustomerProductsAsync();
+                products = products.Concat(customerProducts);
+            }
             
             var sorter = _factory.GetProductSorter(type);
-
             return sorter.Sort(products);
         }
 
-        private async Task<IEnumerable<Product>> GetProductsAsync(bool byPopularity = false)
+        private async Task<IEnumerable<Product>> GetProductsAsync()
         {
-            var resource = byPopularity ? "shopperHistory" : "products";
-            
             // retrieves products using WooliesX api
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_wooliesApiEndpoint}{resource}?token={_appToken}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_wooliesApiEndpoint}products?token={_appToken}");
             var response = await _httpClient.SendAsync(request);
             
             // maybe an exception should be thrown? but thats overkill for the use case
             if (!response.IsSuccessStatusCode) 
                 return new List<Product>();
 
-            if (!byPopularity)
-                return await response.Content.ReadAsAsync<Product[]>();
+            return await response.Content.ReadAsAsync<Product[]>();
+        }
+
+        private async Task<IEnumerable<Product>> GetCustomerProductsAsync()
+        {
+            // retrieves customers using WooliesX api
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_wooliesApiEndpoint}shopperHistory?token={_appToken}");
+            var response = await _httpClient.SendAsync(request);
             
+            // maybe an exception should be thrown? but thats overkill for the use case
+            if (!response.IsSuccessStatusCode) 
+                return new List<Product>();
+
             var customers = await response.Content.ReadAsAsync<Customer[]>();
-            return customers.SelectMany(c => c.Products);
+            return customers.SelectMany(c => c.Products);   
         }
     }
 }
