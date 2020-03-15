@@ -8,5 +8,8 @@ namespace Challenge.Services
     {
         Task<decimal> GetTrolleyTotalAsync(IEnumerable<TrolleyProduct> products, IEnumerable<Special> specials, 
             IEnumerable<ProductQuantity> quantities);
+        
+        decimal CalculateTrolleyTotal(IEnumerable<TrolleyProduct> products, IEnumerable<Special> specials, 
+            IEnumerable<ProductQuantity> quantities);
     }
 }

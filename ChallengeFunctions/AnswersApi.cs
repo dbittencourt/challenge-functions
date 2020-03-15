@@ -63,8 +63,21 @@ namespace ChallengeFunctions
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var trolleyRequest = JsonConvert.DeserializeObject<TrolleyRequest>(requestBody);
 
-            var trolleyTotal =
-                await _trolleyService.GetTrolleyTotalAsync(trolleyRequest.Products, trolleyRequest.Specials, trolleyRequest.Quantities);
+            var trolleyTotal = await _trolleyService.GetTrolleyTotalAsync(trolleyRequest.Products, 
+                trolleyRequest.Specials, trolleyRequest.Quantities);
+            
+            return trolleyTotal;
+        }
+        
+        [FunctionName(("GetTrolleyTotalWithWooliesApi"))]
+        public async Task<ActionResult<decimal>> GetTrolleyTotalWithoutWooliesApi([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "answers2/trolleyTotal")] 
+            HttpRequest req, ILogger log)
+        {
+            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var trolleyRequest = JsonConvert.DeserializeObject<TrolleyRequest>(requestBody);
+
+            var trolleyTotal = _trolleyService.CalculateTrolleyTotal(trolleyRequest.Products, 
+                trolleyRequest.Specials, trolleyRequest.Quantities);
             
             return trolleyTotal;
         }
